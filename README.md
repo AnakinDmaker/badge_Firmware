@@ -5,7 +5,7 @@ C/C++ firmware for the ESP32-based smart badge — controls WS2812 LED effects, 
 ## Status
 ✅ Core logic complete and tested — LED animation pending physical hardware
 
-![Tool](https://img.shields.io/badge/tool-KiCad-yellow)
+![Status](https://img.shields.io/badge/status-working-brightgreen)
 
 ## Working Features
 - 3 light scenes: steady, sine wave, pulse (scene logic implemented)
