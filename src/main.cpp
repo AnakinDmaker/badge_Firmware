@@ -13,6 +13,12 @@ unsigned long loopCount = 0;
 unsigned long updateCount = 0;
 unsigned long lastPrint = 0;
 
+const unsigned long debounceDelay = 30;
+unsigned long lastChangeTime = 0;
+bool stableTouchState = false;
+bool lastRawState = false;
+
+
 void setup() {
   Serial.begin(115200);
   preferences.begin("badge", false);
@@ -35,13 +41,24 @@ void sendStatus() {
 
 void handleTouch() {
   int touchValue = touchRead(4);
-  bool isTouched = touchValue < 30;
-  if (isTouched && !wasTouched) {
-    currentScene = (currentScene + 1) % 3;
-    Serial.print("Scene changed to: ");
-    Serial.println(sceneNames[currentScene]);
+  bool rawState = touchValue < 30;
+
+  if (rawState != lastRawState) {
+    lastChangeTime = millis();
   }
-  wasTouched = isTouched;
+  lastRawState = rawState;
+
+  if ((millis() - lastChangeTime) > debounceDelay) {
+    if (rawState != stableTouchState) {
+      stableTouchState = rawState;
+      if (stableTouchState) {
+        currentScene = (currentScene + 1) % 3;
+        Serial.print("Scene changed to: ");
+        Serial.println(sceneNames[currentScene]);
+        saveSettings();
+      }
+    }
+  }
 }
 
 void runSteadyScene() {
