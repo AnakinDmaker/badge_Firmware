@@ -1,6 +1,12 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
+#include <FastLED.h>
+
 Preferences preferences;
+
+#define LED_PIN 4
+#define NUM_LEDS 16
+CRGB leds[NUM_LEDS];
 
 int currentScene = 0;
 int brightness = 255; // Default brightness
@@ -24,6 +30,8 @@ void setup() {
   preferences.begin("badge", false);
   currentScene = preferences.getInt("scene", 0);
   brightness = preferences.getInt("brightness", 255);
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.setBrightness(brightness);
 }
 
 void saveSettings() {
@@ -62,15 +70,25 @@ void handleTouch() {
 }
 
 void runSteadyScene() {
-  // بعداً: FastLED با یه رنگ ثابت
+  fill_solid(leds, NUM_LEDS, CRGB(255, 120, 0));
+  FastLED.show();
 }
 
 void runWaveScene() {
-  // بعداً: FastLED با انیمیشن موج
+  static uint8_t hueOffset = 0;
+  for (int i = 0; i < NUM_LEDS; i++) {
+    uint8_t wave = sin8(hueOffset + (i * 255 / NUM_LEDS));
+    leds[i] = CRGB(scale8(255, wave), scale8(120, wave), 0);
+  }
+  hueOffset += 3;
+  FastLED.show();
 }
 
 void runPulseScene() {
-  // بعداً: FastLED با فلش سریع
+  static bool on = false;
+  fill_solid(leds, NUM_LEDS, on ? CRGB(255, 120, 0) : CRGB::Black);
+  on = !on;
+  FastLED.show();
 }
 
 void updateLEDs() {
